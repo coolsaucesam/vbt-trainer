@@ -8,6 +8,10 @@
 
 #define ENCODER_PPR       600     // Pulses per revolution
 
+#define DIRECTION_CW 0              // defines a clockwise direction
+
+#define DIRECTION_CCW 1             // defines a counterclockwise direction
+
 // ── Spool geometry ───────────────────────────────────
 
 #define SPOOL_DIAMETER_MM 30.0    // Measure your actual spool and update this
