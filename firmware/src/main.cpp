@@ -155,6 +155,11 @@ void setup(){
         display.display();
         Serial.println("OLED initialized"); // Prints initialization to Serial
     }
+    //_________________________ BLE _________________________
+    //_________________________ Record Start Time _________________________
+    lastSampleTime = millis(); //Grabs the current time
+    Serial.println("Setup complete. Waiting for lifts..."); 
+
 }
 
 
@@ -166,7 +171,60 @@ void loop() {
         smoothVelocity = smoothVelocityReading(rawVel);
         logToSerial(now, rawVel, smoothVelocity, repCount);
     }
-    //Task 1a: 
+    //Task 1a: Rep detection
+    //Check to see if a rep is already in progress
+    if (!repInProgress) {
+        //If rep is not in progress, one is started
+        
+        if (smoothVelocity > REP_START_VELOCITY) {
+            repInProgress = true; //change bool for reps
+            repStartTime = now; //set the rep start time to now
+            peakVelocity = smoothVelocity; //set the peak velocity to the velocity at the start
+            velocitySumThisRep = smoothVelocity; //Begin to sum velocities with first sample
+            samplesThisRep = 1; 
+            Serial.println("# REP START");  // # prefix denotes a comment in CSV
+        }
+    }
+    // Else means rep is in progress - data collection is active
+    else {
+        velocitySumThisRep += smoothVelocity;
+        samplesThisRep ++;
+        if (smoothVelocity > peakVelocity) {
+            peakVelocity = smoothVelocity;
+        }
 
+        //Check to see if the rep has ended based on thresholds set in config.h
+        //The two criteria for this are: 
+        //1. The velocity drops below threshold. 
+        //2. The duraction minimum is met to prevent false positive reps
+        bool velocityDropped = smoothVelocity < REP_END_VELOCITY; 
+        bool longEnough = (now - repStartTime) > REP_MIN_DURATION_MS;
+        if (velocityDropped && longEnough){
+            //Below is calculated when the rep is complete
+            repInProgress = false; //program knows rep is over
+            repCount ++; //count the final rep
+            meanConcentricVelo = velocitySumThisRep / samplesThisRep;
+            // Store first rep velocity for VL% calculation
+            if (repCount == 1) {
+                rep1Velocity = meanConcentricVelo;
+            }
+            // Velocity Loss % = (rep1 - repN) / rep1 * 100
+            if (rep1Velocity > 0) {
+            velocityLoss = ((rep1Velocity - meanConcentricVelo)/ rep1Velocity) * 100.0;
+            }
+            // Log completed rep summary (starts with # so Python can parse separately)
+            Serial.print("# REP ");
+            Serial.print(repCount);
+            Serial.print(" | MCV: ");
+            Serial.print(meanConcentricVelo, 3);
+            Serial.print(" | Peak: ");
+            Serial.print(peakVelocity, 3);
+            Serial.print(" | VL%: ");
+            Serial.println(velocityLoss, 1);
+            // Update display immediately after rep
+            updateDisplay(smoothVelocity, repCount, meanConcentricVelo, velocityLoss);
+
+        }
+    }
     //[Incomplete] Task 2: Send BLE update at 10Hz
 }
