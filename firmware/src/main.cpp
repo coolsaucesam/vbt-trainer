@@ -38,6 +38,24 @@ NimBLEServer* bleServer = nullptr;
 NimBLECharacteristic* bleCharVelocity = nullptr;
 bool bleClientConnected = false;
 unsigned long lastBLEUpdate = 0; // timestamp of last BLE broadcast
+class ServerCallbacks : public NimBLEServerCallbacks {
+    void onConnect(NimBLEServer* server) override {
+
+        bleClientConnected = true;
+
+        Serial.println("BLE: phone connected");
+
+    }
+        void onDisconnect(NimBLEServer* server) override {
+
+        bleClientConnected = false;
+
+        Serial.println("BLE: phone disconnected — advertising again");
+
+        server->startAdvertising();  // Auto-restart advertising so phone can reconnect
+
+    }
+}
 
 // HELPER FUNCTIONS ---------------------
 // calculateVelocity: Returns raw velocity in m/s when called every 200Hz/5ms in loop()
@@ -122,6 +140,9 @@ float smoothVelocityReading(float newSample){
     return sum/SMOOTHING_WINDOW;
 }
 
+void setupBLE(){
+
+}
 
 void setup(){
     //_________________________ SERIAL _________________________
@@ -226,5 +247,9 @@ void loop() {
 
         }
     }
-    //[Incomplete] Task 2: Send BLE update at 10Hz
+    // Task 2: Send BLE update at 10Hz
+    if (now - lastBLEUpdate >= (1000 / BLE_BROADCAST_HZ)) {
+        lastBLEUpdate = now;
+        sendBleUpdate(smoothVelocity, repCount, meanConcentricVelo, velocityLoss);
+    }
 }

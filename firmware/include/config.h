@@ -42,6 +42,10 @@
 
 #define BLE_BROADCAST_HZ  10      // How often to send BLE packet
 
+#define SERVICE_UUID        "209ec59d-a3ea-40c6-ae45-e495047cff05"
+
+#define CHARACTERISTIC_UUID "85f3ab78-fdfb-4c16-8b9e-1a324e287fb3"
+
 // ── Display ───────────────────────────────────────────
 
 #define OLED_SDA_PIN      21
