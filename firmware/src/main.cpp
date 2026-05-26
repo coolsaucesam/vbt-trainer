@@ -96,6 +96,18 @@ void updateDisplay(float velocity, int reps, float mcv, float vLoss) {
     display.display(); //Push buffer to screen — nothing shows until this is called
 }
 
+//sendBleUpdate: When called, packages current rep data as JSON string 
+//formatted as {"v":1.23,"reps":3,"mcv":1.18,"vl":4.2} and sends as BLE packet
+void sendBleUpdate(float velocity, int reps, float mcv, float vLoss) {
+    if (!bleClientConnected) return;  // Immedate return if not bluetooth connection is established
+    // Sample JSON string is as follows: {"v":1.23,"reps":3,"mcv":1.18,"vl":4.2}
+    char jsonBuffer[80]; // If number of reps gets too high, this may crash the buffer of only 80
+    snprintf(jsonBuffer, sizeof(jsonBuffer),
+        "{\"v\":%.2f,\"reps\":%d,\"mcv\":%.2f,\"vl\":%.1f}", velocity, reps, mcv, vLoss);
+    bleCharVelocity->setValue((uint8_t*)jsonBuffer, strlen(jsonBuffer));
+    bleCharVelocity->notify();  //Push to any subscribed phone
+}
+
 // smoothVelocityReading: takes the float of the newest velocity sample "newSample" 
 // and returns a new smoothed average given the defined SMOOTHING_WINDOW
 float smoothVelocityReading(float newSample){
@@ -112,7 +124,7 @@ float smoothVelocityReading(float newSample){
 
 
 void setup(){
-    // SERIAL 
+    //_________________________ SERIAL _________________________
     Serial.begin(115200);
     Serial.println("VBT Trainer starting...");
     // ENCODER
@@ -124,6 +136,23 @@ void setup(){
     //Initialized velocity buffer to be zero
     for (int i=0; i<SMOOTHING_WINDOW; i++){
         velocityBuffer[i] = 0.0;
+    
+    //_________________________ OLED _________________________
+    Wire.begin(OLED_SDA_PIN, OLED_SCL_PIN);  // Start I2C on the pins from config.h
+    if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS)) {
+        // If OLED doesn't initialize, print error and continue without it
+        Serial.println("WARNING: OLED not found — check wiring"); 
+        // Prints a display isn't functioning message   
+    } else {
+        // initialization messages
+        display.clearDisplay();
+        display.setTextSize(1);
+        display.setTextColor(SSD1306_WHITE);
+        display.setCursor(0, 0);
+        display.println("VBT Trainer");
+        display.println("Ready.");
+        display.display();
+        Serial.println("OLED initialized"); // Prints initialization to Serial
     }
 }
 
