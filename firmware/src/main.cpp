@@ -154,10 +154,6 @@ float smoothVelocityReading(float newSample){
     return sum/SMOOTHING_WINDOW;
 }
 
-void setupBLE(){
-
-}
-
 void setup(){
     //_________________________ SERIAL _________________________
     Serial.begin(115200);
