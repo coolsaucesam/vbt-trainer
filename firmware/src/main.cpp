@@ -1,5 +1,7 @@
 #include <Arduino.h> // Core: pinMode, digitalRead, millis, Serial
 #include <ESP32Encoder.h> // Harware pulse counter -- performs better than interrupts
+#include <Adafruit_GFX.h>      // Graphics base library for OLED
+#include <Adafruit_SSD1306.h>  // OLED driver
 #include <Wire.h> //I2C protocol -- needed for OLED
 #include <NimBLEDevice.h> // Bluetooth Low Energy
 #include "config.h" //imports custom pin definitions and constants
@@ -29,6 +31,7 @@ float rep1Velocity = 0.0; // MCV of first rep (to calculate velocity loss %)
 float velocityLoss = 0.0; // Signed percent change from first to last rep
 
 // OLED 
+Adafruit_SSD1306 display(128, 64, &Wire, -1);
 
 // Bluetooth LE 
 NimBLEServer* bleServer = nullptr;
@@ -68,6 +71,30 @@ void logToSerial(unsigned long timestamp, float rawVelocity, float smoothVel, in
     Serial.println(rep);            // println adds newline — Python reads line by line
 }
 
+//updateDisplay: called after each rep is completed and at every 100ms interval during the rep
+void updateDisplay(float velocity, int reps, float mcv, float vLoss) {
+    display.clearDisplay(); //Clear display of any existing text
+    display.setTextColor(SSD1306_WHITE);
+    //LINE 1: Large text displaying LIVE VELOCITY
+    display.setTextSize(2); 
+    display.setCursor(0, 0);
+    display.print(velocity, 2);   // Round velocity to 2 decimal places
+    display.print(" m/s");
+    //LINE 2: Displays a rep counter for current exercise
+    display.setTextSize(1);
+    display.setCursor(0, 22);
+    display.print("Reps: "); //Prints "reps" before the number that gets updated
+    display.print(reps);
+    //LINE 3: Last rep MCV
+    display.setCursor(0, 32);
+    display.print("MCV: ");
+    display.print(mcv, 2); //Rounds mcv to 2 decimal places, consistent with velo
+    display.print(" m/s");
+    // Line 5: BLE status
+    display.setCursor(0, 54);
+    display.print(bleClientConnected ? "BLE: connected" : "BLE: waiting...");
+    display.display(); //Push buffer to screen — nothing shows until this is called
+}
 
 // smoothVelocityReading: takes the float of the newest velocity sample "newSample" 
 // and returns a new smoothed average given the defined SMOOTHING_WINDOW
@@ -82,6 +109,7 @@ float smoothVelocityReading(float newSample){
     }
     return sum/SMOOTHING_WINDOW;
 }
+
 
 void setup(){
     // SERIAL 
