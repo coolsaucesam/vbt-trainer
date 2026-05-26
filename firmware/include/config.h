@@ -38,7 +38,7 @@
 
 // ── BLE ───────────────────────────────────────────────
 
-#define BLE_DEVICE_NAME   "VBT-Trainer"
+#define BLE_DEVICE_NAME   "VBT-Trainer-V_0"
 
 #define BLE_BROADCAST_HZ  10      // How often to send BLE packet
 

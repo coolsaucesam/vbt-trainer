@@ -55,8 +55,22 @@ class ServerCallbacks : public NimBLEServerCallbacks {
         server->startAdvertising();  // Auto-restart advertising so phone can reconnect
 
     }
-}
+};
 
+void setupBLE(){
+    NimBLEDevice::init(BLE_DEVICE_NAME);  // Initialize with your device name
+    bleServer = NimBLEDevice::createServer();
+    bleServer->setCallbacks(new ServerCallbacks());
+    //Create the service - service being the catagory of data, in this case vbt velocity data
+    NimBLEService* service = bleServer->createService(SERVICE_UUID);
+    bleCharVelocity = service->createCharacteristic(CHARACTERISTIC_UUID, NIMBLE_PROPERTY::NOTIFY);
+    service->start(); 
+    // begins advertizing existence so phone can connect 
+    NimBLEAdvertising* advertising = NimBLEDevice::getAdvertising();
+    advertising->addServiceUUID(SERVICE_UUID);
+    advertising->start();
+    Serial.println("BLE: advertising as '" BLE_DEVICE_NAME "'");
+}
 // HELPER FUNCTIONS ---------------------
 // calculateVelocity: Returns raw velocity in m/s when called every 200Hz/5ms in loop()
 float calculateVelocity() {
