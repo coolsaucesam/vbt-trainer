@@ -187,6 +187,7 @@ void setup(){
         Serial.println("OLED initialized"); // Prints initialization to Serial
     }
     //_________________________ BLE _________________________
+    setupBLE();
     //_________________________ Record Start Time _________________________
     lastSampleTime = millis(); //Grabs the current time
     Serial.println("Setup complete. Waiting for lifts..."); 
