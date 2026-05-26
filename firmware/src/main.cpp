@@ -24,7 +24,7 @@ float meanConcentricVelo = 0.0; //Mean Concentric Velocity for the completed rep
 // **Mean Concentric Velocity (MCV)** Average velocity of the barbell during the rep
 float velocitySumThisRep = 0.0; // Sum of the velocity samples during concentric phase
 int samplesThisRep = 0; // Number of sampels taken during the concentric phase of the rep
-unsigned repStartTime = 0; // When this rep started (ms)
+unsigned long repStartTime = 0; // When this rep started (ms)
 
 // Session Tracking
 float rep1Velocity = 0.0; // MCV of first rep (to calculate velocity loss %)
