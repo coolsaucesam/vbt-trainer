@@ -16,7 +16,7 @@ unsigned long lastSampleTime = 0; //Timestamp of last velocity sample (ms)
 
 // Rep detection
 bool repInProgress = false; // Checks to see if we are currently in a rep
-int RepCount = 0; // Total reps in the session
+int repCount = 0; // Total reps in the session
 float repStartVelocity = 0.0; // Velocity at the start of the rep 
 float meanConcentricVelo = 0.0; //Mean Concentric Velocity for the completed repetition 
 // **Mean Concentric Velocity (MCV)** Average velocity of the barbell during the rep
@@ -38,7 +38,7 @@ unsigned long lastBLEUpdate = 0; // timestamp of last BLE broadcast
 
 // HELPER FUNCTIONS ---------------------
 // calculateVelocity: Returns raw velocity in m/s when called every 200Hz/5ms in loop()
-float calculateVelocity(){
+float calculateVelocity() {
     unsigned long now = millis(); // Gets current time in ms
     long nowCount = encoder.getCount(); // Gets the current encoder pulse count
     unsigned long dt_ms = now - lastSampleTime; // Time delta between last sample (ms)
@@ -55,6 +55,19 @@ float calculateVelocity(){
     //we want concentric or upward velocity, so we take the absolute value of velocity
     return abs(velocity_ms);
 }
+
+// logToSerial: logs the timestamp (ms), rawVelocity value, and smoothVel value in csv format
+void logToSerial(unsigned long timestamp, float rawVelocity, float smoothVel, int rep) {
+    // Format: timestamp_ms, raw_velocity, smooth_velocity, rep_number
+    Serial.print(timestamp);
+    Serial.print(",");
+    Serial.print(rawVelocity, 4);   // 4 decimal places
+    Serial.print(",");
+    Serial.print(smoothVel, 4);
+    Serial.print(",");
+    Serial.println(rep);            // println adds newline — Python reads line by line
+}
+
 
 // smoothVelocityReading: takes the float of the newest velocity sample "newSample" 
 // and returns a new smoothed average given the defined SMOOTHING_WINDOW
@@ -79,7 +92,7 @@ void setup(){
     encoder.attachHalfQuad(ENCODER_PIN_A, ENCODER_PIN_B);
     //NOTE!! Currently using 2 ppr from config.h
     encoder.setCount(0); // Zero the counter when starting up
-    Serial.printIn("Encoder initialized on GPIO " + String(ENCODER_PIN_A) + "and" + String(ENCODER_PIN_B));
+    Serial.println("Encoder initialized on GPIO " + String(ENCODER_PIN_A) + "and" + String(ENCODER_PIN_B));
     //Initialized velocity buffer to be zero
     for (int i=0; i<SMOOTHING_WINDOW; i++){
         velocityBuffer[i] = 0.0;
