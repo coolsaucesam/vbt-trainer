@@ -136,6 +136,7 @@ void setup(){
     //Initialized velocity buffer to be zero
     for (int i=0; i<SMOOTHING_WINDOW; i++){
         velocityBuffer[i] = 0.0;
+    }
     
     //_________________________ OLED _________________________
     Wire.begin(OLED_SDA_PIN, OLED_SCL_PIN);  // Start I2C on the pins from config.h
