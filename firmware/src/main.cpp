@@ -154,6 +154,7 @@ float smoothVelocityReading(float newSample){
     return sum/SMOOTHING_WINDOW;
 }
 
+
 void setup(){
     //_________________________ SERIAL _________________________
     Serial.begin(115200);
@@ -193,8 +194,17 @@ void setup(){
     Serial.println("Setup complete. Waiting for lifts..."); 
 
 }
-
-
+/*
+void loop(){
+    int stateA = digitalRead(18);
+    int stateB = digitalRead(19);
+    Serial.print("A: ");
+    Serial.print(stateA);
+    Serial.print("B ");
+    Serial.print(stateB);
+    delay(100);
+} 
+*/
 void loop() {
     unsigned long now = millis(); // Get current time once per loop iteration
     //TASK 1: Calculate velocity at 200Hz
@@ -263,5 +273,14 @@ void loop() {
     if (now - lastBLEUpdate >= (1000 / BLE_BROADCAST_HZ)) {
         lastBLEUpdate = now;
         sendBleUpdate(smoothVelocity, repCount, meanConcentricVelo, velocityLoss);
+    }
+
+    // Temporary debug 
+    static long lastDebugCount = 0;
+    long currentCount = encoder.getCount();
+    if (currentCount != lastDebugCount) {
+        Serial.print("Encoder count: ");
+        Serial.println(currentCount);
+        lastDebugCount = currentCount;
     }
 }
