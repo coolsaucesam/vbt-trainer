@@ -103,13 +103,13 @@ void logToSerial(unsigned long timestamp, float rawVelocity, float smoothVel, in
 }
 
 //updateDisplay: called after each rep is completed and at every 100ms interval during the rep
-void updateDisplay(float velocity, int reps, float mcv, float vLoss) {
+void updateDisplay(float mcv, int reps, float velocity, float vLoss) {
     display.clearDisplay(); //Clear display of any existing text
     display.setTextColor(SSD1306_WHITE);
     //LINE 1: Large text displaying LIVE VELOCITY
     display.setTextSize(2); 
     display.setCursor(0, 0);
-    display.print(velocity, 2);   // Round velocity to 2 decimal places
+    display.print(mcv, 2);   // Round velocity to 2 decimal places
     display.print(" m/s");
     //LINE 2: Displays a rep counter for current exercise
     display.setTextSize(1);
@@ -118,9 +118,14 @@ void updateDisplay(float velocity, int reps, float mcv, float vLoss) {
     display.print(reps);
     //LINE 3: Last rep MCV
     display.setCursor(0, 32);
-    display.print("MCV: ");
-    display.print(mcv, 2); //Rounds mcv to 2 decimal places, consistent with velo
+    display.print("Peak: ");
+    display.print(velocity, 2); //Rounds mcv to 2 decimal places, consistent with velo
     display.print(" m/s");
+    // Line 4: Velocity loss %
+    display.setCursor(0, 42);
+    display.print("VL%: ");
+    display.print(vLoss, 1);
+    display.print("%");
     // Line 5: BLE status
     display.setCursor(0, 54);
     display.print(bleClientConnected ? "BLE: connected" : "BLE: waiting...");
@@ -210,16 +215,16 @@ void loop(){
 */
 void loop() {
     int buttonState = digitalRead(RESET_BUTTON_PIN); // Immediately reads 
-    if (buttonState = 0){
+    if (buttonState == 0){
         updateDisplay(0.00, 0, 0.00, 0);
+        repCount = 0;
     }
     unsigned long now = millis(); // Get current time once per loop iteration
     //TASK 1: Calculate velocity at 200Hz
     if (now - lastSampleTime >= (1000/SAMPLE_RATE_HZ)){
         float rawVel = calculateVelocity();
         smoothVelocity = smoothVelocityReading(rawVel);
-        logToSerial(now, rawVel, smoothVelocity, repCount);
-    
+        logToSerial(now, rawVel, smoothVelocity, repCount);    
         //Task 1a: Rep detection
         //Check to see if a rep is already in progress
         if (!repInProgress) {
@@ -266,7 +271,7 @@ void loop() {
                     setPeakVelocity = meanConcentricVelo;
                 }
                 if (setPeakVelocity > 0){
-                    velocityLoss = ((setPeakVelocity - meanConcentricVelo)/ setPeakVelocity) * 100.0; // Case 1 (and 3)
+                    velocityLoss = ((setPeakVelocity - meanConcentricVelo)/ setPeakVelocity) * 100.0 * -1; // Case 1 (and 3)
 
                     if (meanConcentricVelo > setPeakVelocity){
                         // After loss (or gain in this case) is calculated, set the new repPeak
@@ -284,7 +289,7 @@ void loop() {
                 Serial.print(" | VL%: ");
                 Serial.println(velocityLoss, 1);
                 // Update display immediately after rep
-                updateDisplay(meanConcentricVelo, repCount, meanConcentricVelo, velocityLoss);
+                updateDisplay(meanConcentricVelo, repCount, peakVelocity, velocityLoss);
 
             }
         }
@@ -292,7 +297,7 @@ void loop() {
     // Task 2: Send BLE update at 10Hz
     if (now - lastBLEUpdate >= (1000 / BLE_BROADCAST_HZ)) {
         lastBLEUpdate = now;
-        sendBleUpdate(meanConcentricVelo, repCount, meanConcentricVelo, velocityLoss);
+        sendBleUpdate(meanConcentricVelo, repCount, peakVelocity, velocityLoss);
     }
 
     // Temporary debug 
