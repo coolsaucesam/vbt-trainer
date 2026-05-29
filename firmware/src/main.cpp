@@ -20,7 +20,7 @@ unsigned long lastSampleTime = 0; //Timestamp of last velocity sample (ms)
 bool repInProgress = false; // Checks to see if we are currently in a rep
 int repCount = 0; // Total reps in the session
 float repStartVelocity = 0.0; // Velocity at the start of the rep 
-float meanConcentricVelo = 0.0; //Mean Concentric Velocity for the completed repetition 
+float meanConcentricVelo = 0.0; //Mean Concentric Velocity for the completed repetition
 // **Mean Concentric Velocity (MCV)** Average velocity of the barbell during the rep
 float velocitySumThisRep = 0.0; // Sum of the velocity samples during concentric phase
 int samplesThisRep = 0; // Number of sampels taken during the concentric phase of the rep
@@ -159,6 +159,9 @@ void setup(){
     //_________________________ SERIAL _________________________
     Serial.begin(115200);
     Serial.println("VBT Trainer starting...");
+    //_________________________ BUTTON _________________________
+    pinMode(RESET_BUTTON_PIN, INPUT_PULLUP);
+
     // ENCODER
     ESP32Encoder::useInternalWeakPullResistors = puType::up; //enable internat pull-up resistors
     encoder.attachHalfQuad(ENCODER_PIN_A, ENCODER_PIN_B);
@@ -183,8 +186,9 @@ void setup(){
         display.setTextColor(SSD1306_WHITE);
         display.setCursor(0, 0);
         display.println("VBT Trainer");
-        display.println("Ready.");
-        display.display();
+        display.println("Ready... ");
+        display.clearDisplay();
+        display.println("Setup complete. Waiting for lifts...");
         Serial.println("OLED initialized"); // Prints initialization to Serial
     }
     //_________________________ BLE _________________________
@@ -206,6 +210,10 @@ void loop(){
 } 
 */
 void loop() {
+    int buttonState = digitalRead(RESET_BUTTON_PIN); // Immediately reads 
+    if (buttonState = 0){
+        updateDisplay(0.00, 0, 0.00, 0);
+    }
     unsigned long now = millis(); // Get current time once per loop iteration
     //TASK 1: Calculate velocity at 200Hz
     if (now - lastSampleTime >= (1000/SAMPLE_RATE_HZ)){
@@ -264,7 +272,7 @@ void loop() {
                 Serial.print(" | VL%: ");
                 Serial.println(velocityLoss, 1);
                 // Update display immediately after rep
-                updateDisplay(smoothVelocity, repCount, meanConcentricVelo, velocityLoss);
+                updateDisplay(meanConcentricVelo, repCount, meanConcentricVelo, velocityLoss);
 
             }
         }
@@ -272,7 +280,7 @@ void loop() {
     // Task 2: Send BLE update at 10Hz
     if (now - lastBLEUpdate >= (1000 / BLE_BROADCAST_HZ)) {
         lastBLEUpdate = now;
-        sendBleUpdate(smoothVelocity, repCount, meanConcentricVelo, velocityLoss);
+        sendBleUpdate(meanConcentricVelo, repCount, meanConcentricVelo, velocityLoss);
     }
 
     // Temporary debug 

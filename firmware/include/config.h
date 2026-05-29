@@ -53,3 +53,7 @@
 #define OLED_SCL_PIN      22
 
 #define OLED_ADDRESS      0x3C
+
+// ── Button ───────────────────────────────────────────
+
+#define RESET_BUTTON_PIN 4 
