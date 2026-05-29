@@ -27,9 +27,8 @@ int samplesThisRep = 0; // Number of sampels taken during the concentric phase o
 unsigned long repStartTime = 0; // When this rep started (ms)
 
 // Session Tracking
-float rep1Velocity = 0.0; // MCV of first rep (to calculate velocity loss %)
-float velocityLoss = 0.0; // Signed percent change from first to last rep
-
+float setPeakVelocity = 0.0; // MCV of the rep with the highest velocity (to calculate velocity loss %)
+float velocityLoss = 0.0; // Signed percent change from peak rep to most recent rep
 // OLED 
 Adafruit_SSD1306 display(128, 64, &Wire, -1);
 
@@ -253,15 +252,28 @@ void loop() {
                 //Below is calculated when the rep is complete
                 repInProgress = false; //program knows rep is over
                 repCount ++; //count the final rep
-                meanConcentricVelo = velocitySumThisRep / samplesThisRep;
+                meanConcentricVelo = velocitySumThisRep / samplesThisRep; // calculate MCV
                 // Store first rep velocity for VL% calculation
+                /* Logic of VL% - Velocity Loss % = (peakRep - repN) / peakRep * 100
+                -If on rep1 --> assign peak to rep1
+                -If on rep2 or later, there are three cases:
+                    1. repN < rep1 --> imediately calculate velocity change
+                    2. repN+1 > repPeak --> calculate velocity change AND set peak to repN+1 MCV
+                    3. repN+1 = repN --> velocity change is 0, but need to check for this case
+                */
+
                 if (repCount == 1) {
-                    rep1Velocity = meanConcentricVelo;
+                    setPeakVelocity = meanConcentricVelo;
                 }
-                // Velocity Loss % = (rep1 - repN) / rep1 * 100
-                if (rep1Velocity > 0) {
-                velocityLoss = ((rep1Velocity - meanConcentricVelo)/ rep1Velocity) * 100.0;
+                if (setPeakVelocity > 0){
+                    velocityLoss = ((setPeakVelocity - meanConcentricVelo)/ setPeakVelocity) * 100.0; // Case 1 (and 3)
+
+                    if (meanConcentricVelo > setPeakVelocity){
+                        // After loss (or gain in this case) is calculated, set the new repPeak
+                        setPeakVelocity = meanConcentricVelo;
+                    }
                 }
+                
                 // Log completed rep summary (starts with # so Python can parse separately)
                 Serial.print("# REP ");
                 Serial.print(repCount);
