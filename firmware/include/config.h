@@ -14,7 +14,7 @@
 
 // ── Spool geometry ───────────────────────────────────
 
-#define SPOOL_DIAMETER_MM 35.33    // (mm)Measure your actual spool and update this
+#define SPOOL_DIAMETER_MM 37.47    // in mm
 
 #define SPOOL_CIRCUMFERENCE_MM (SPOOL_DIAMETER_MM * 3.14159)
 
