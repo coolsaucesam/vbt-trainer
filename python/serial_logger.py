@@ -2,6 +2,7 @@ import serial
 import serial.tools.list_ports
 import csv 
 import os
+import time
 from datetime import datetime
 
 BAUD_RATE = 115200 # baude rate means bits per second
@@ -94,25 +95,26 @@ def run_logger(port):
     rep_writer.writerow(['rep_num', 'mcv', 'peak_velocity', 'vl_percent'])
 
     try:
-
-        ser = serial.Serial(port, BAUD_RATE, timeout=1) #Opens the serial port connection to ESP32
+        ser = serial.Serial(port, BAUD_RATE, timeout=1)
+        time.sleep(2.5)
+        ser.reset_input_buffer()
+        #ser = serial.Serial(port, BAUD_RATE, timeout=1) #Opens the serial port connection to ESP32
         print(f"Connected to {port} at {BAUD_RATE}\n") #Alert user of connection success
-
+        
         while True:
-            
             #Reads line fron serial until a \n is read
-            line = ser.readline().decode('utf-8', errors='replace').strip
-
-
+            line = ser.readline().decode('utf-8', errors='replace').strip()
+            if '# REP' in line:
+                print(f"REP LINE: {repr(line)}")
+    
             if not line:
                 continue # if readline times out we want the program to continue running
 
             # --- Branch 1: Rep summary lines ---
-            if line.startswith('# REP ') and 'MCV' in line:
+            if line.startswith('# REP,'):
                 
-                print(f'  {line}')
+                print(f' {line}\n')
                 parsed = parse_rep_summary(line) # parse the line into a list of values
-                
                 # if parsed condition verifies parsing is succeeding before writing values
                 if parsed:
                     rep_writer.writerow(parsed)
@@ -120,7 +122,6 @@ def run_logger(port):
                     # to disc immediately, rather than waiting for the buffer to fill up
                     # ensuring data ins't lost if the program crashes
                                
-
             # --- Branch 2: Other comment lines ---
             # These may be useful, so print them, but don't write to csv
             elif line.startswith('#'):
@@ -135,7 +136,7 @@ def run_logger(port):
                 try:
                     parts = line.split(',') # splits line into a list by commas
 
-                    if line(parts) == 4: #ensures there are only the 4 items we expect
+                    if len(parts) == 4: #ensures there are only the 4 items we expect
                         raw_writer.writerow(parts)
 
                         if int(parts[0]) % 1250 == 0:

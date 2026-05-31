@@ -236,7 +236,6 @@ void loop() {
                 peakVelocity = smoothVelocity; //set the peak velocity to the velocity at the start
                 velocitySumThisRep = smoothVelocity; //Begin to sum velocities with first sample
                 samplesThisRep = 1; 
-                Serial.println("# REP START");  // # prefix denotes a comment in CSV
             }
         }
         // Else means rep is in progress - data collection is active
@@ -287,7 +286,7 @@ void loop() {
                 Serial.print(",");
                 Serial.print(peakVelocity, 3);
                 Serial.print(",");
-                Serial.print(velocityLoss, 1);
+                Serial.println(velocityLoss, 1);
                 // Update display immediately after rep
                 updateDisplay(meanConcentricVelo, repCount, peakVelocity, velocityLoss);
 
@@ -299,13 +298,5 @@ void loop() {
         lastBLEUpdate = now;
         sendBleUpdate(meanConcentricVelo, repCount, peakVelocity, velocityLoss);
     }
-
-    // Temporary debug 
-    static long lastDebugCount = 0;
-    long currentCount = encoder.getCount();
-    if (currentCount != lastDebugCount) {
-        Serial.print("Encoder count: ");
-        Serial.println(currentCount);
-        lastDebugCount = currentCount;
-    }
+    
 }
