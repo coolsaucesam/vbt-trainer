@@ -280,14 +280,16 @@ void loop() {
                 }
                 
                 // Log completed rep summary (starts with # so Python can parse separately)
-                Serial.print("# REP ");
+                Serial.print("# REP,");
                 Serial.print(repCount);
-                Serial.print(" | MCV: ");
+                Serial.print(",");
                 Serial.print(meanConcentricVelo, 3);
-                Serial.print(" | Peak: ");
+                Serial.print(",");
                 Serial.print(peakVelocity, 3);
-                Serial.print(" | VL%: ");
-                Serial.println(velocityLoss, 1);
+                Serial.print(",");
+                Serial.print(velocityLoss, 1);
+                Serial.print(",");
+                Serial.println(repToDrop, 1);
                 // Update display immediately after rep
                 updateDisplay(meanConcentricVelo, repCount, peakVelocity, velocityLoss);
 
