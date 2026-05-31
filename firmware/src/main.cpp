@@ -288,8 +288,6 @@ void loop() {
                 Serial.print(peakVelocity, 3);
                 Serial.print(",");
                 Serial.print(velocityLoss, 1);
-                Serial.print(",");
-                Serial.println(repToDrop, 1);
                 // Update display immediately after rep
                 updateDisplay(meanConcentricVelo, repCount, peakVelocity, velocityLoss);
 
