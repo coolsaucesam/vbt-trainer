@@ -61,16 +61,12 @@ def plot_session_velocity(raw_df, rep_df=None):
         if rep_id == 0: # if first rep has not started, continue
             continue
             
-        rep_data = raw_df[(raw_df['rep_num'] == rep_id) & (raw_df['raw_velocity'] > 0.05)] # gets all rows of raw_df for that rep_id
+        rep_data = raw_df[(raw_df['rep_num'] == rep_id) & (raw_df['raw_velocity'] > 0)] # gets all rows of raw_df for that rep_id
 
 
-        start_time = rep_data['time_s'].min() 
-        end_time = rep_data['time_s'].max()
-        print(f'{start_time}, {end_time}, on rep: {rep_id}')
-
-        ax.axvspan(start_time, end_time, alpha=0.25)
-
-        
+        start_time = rep_data['time_s'].min()  # retrieves the smallest time in the list 
+        end_time = rep_data['time_s'].max() # retrieves the largest time in the list for the rep
+        ax.axvspan(start_time, end_time, alpha=0.25) # creates a vertical span over the rep with a 75% transparency
     plt.show()
 
 
