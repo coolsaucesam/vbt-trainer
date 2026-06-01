@@ -1,3 +1,7 @@
+/*
+ VBT Trainer Project - Samuel Smith - Spring 2026
+sibsmith@bu.edu | sibsmith.ithaca@gmail.com
+*/
 #include <Arduino.h> // Core: pinMode, digitalRead, millis, Serial
 #include <ESP32Encoder.h> // Harware pulse counter -- performs better than interrupts
 #include <Adafruit_GFX.h>      // Graphics base library for OLED
