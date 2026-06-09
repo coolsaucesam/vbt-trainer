@@ -24,10 +24,6 @@ Built as a portfolio project for mechanical engineering graduate study.
 
 ## Hardware
 
-| Component | Part | Cost |
-
-|---|---|---|
-
 | Microcontroller | ESP32 DevKit v1 | ~$8 |
 
 | Encoder | Taiss 600PPR | ~$18 | 
@@ -70,7 +66,7 @@ python python/serial_logger.py
 
 ## Build Log
 
-- [ ] Phase 1: Sensor validation
+- [X] Phase 1: Sensor validation
 
 - [ ] Phase 2: Firmware + Python pipeline
 
