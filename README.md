@@ -28,9 +28,9 @@ Built as a portfolio project for mechanical engineering graduate study.
 
 |---|---|---|
 
-| Microcontroller | ESP32-WROOM-32 | ~$8 |
+| Microcontroller | ESP32 DevKit v1 | ~$8 |
 
-| Encoder | Signswise 600PPR | ~$10 |
+| Encoder | Taiss 600PPR | ~$18 | 
 
 | Display | SSD1306 0.96" OLED | ~$5 |
 
